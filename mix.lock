@@ -1,0 +1,9 @@
+%{
+  "castore": {:hex, :castore, "0.1.19", "a2c3e46d62b7f3aa2e6f88541c21d7400381e53704394462b9fd4f06f6d42bb6", [:mix], [], "hexpm", "e96e0161a5dc82ef441da24d5fa74aefc40d920f3a6645d15e1f9f3e66bb2109"},
+  "floki": {:hex, :floki, "0.20.4", "be42ac911fece24b4c72f3b5846774b6e61b83fe685c2fc9d62093277fb3bc86", [:mix], [{:html_entities, "~> 0.4.0", [hex: :html_entities, repo: "hexpm", optional: false]}, {:mochiweb, "~> 2.15", [hex: :mochiweb, repo: "hexpm", optional: false]}], "hexpm", "2e7e21cd417c4b13523dd8b97379a33e5f432d4d1b149cf5ab496a4a29bdd7ab"},
+  "html_entities": {:hex, :html_entities, "0.4.0", "f2fee876858cf6aaa9db608820a3209e45a087c5177332799592142b50e89a6b", [:mix], [], "hexpm", "3e3d7156a272950373ce5a4018b1490bea26676f8d6a7d409f6fac8568b8cb9a"},
+  "mochiweb": {:hex, :mochiweb, "2.22.0", "f104d6747c01a330c38613561977e565b788b9170055c5241ac9dd6e4617cba5", [:rebar3], [], "hexpm", "cbbd1fd315d283c576d1c8a13e0738f6dafb63dc840611249608697502a07655"},
+  "pdf_pal": {:hex, :pdf_pal, "0.1.0", "607db70a1eff42197288cf51d2cc48c02d0a677dd0f1be1ea8404e9960abe328", [:mix], [{:floki, "~> 0.20.4", [hex: :floki, repo: "hexpm", optional: false]}], "hexpm", "db6385f860e698cc86ef819ba848018ddc8745b2fa5f84a2c680812bf299bb51"},
+  "pdf_to_text": {:git, "https://github.com/remoteoss/pdf_to_text.git", "7fe8b9d65adb2fe41dc4ffd38fbf96945b0cc3e9", []},
+  "rustler_precompiled": {:hex, :rustler_precompiled, "0.5.4", "34f79a8bdeeb094590b6d88a03469c90d2192c45ac10afcae2acf4f1b925b2dc", [:mix], [{:castore, "~> 0.1", [hex: :castore, repo: "hexpm", optional: false]}, {:rustler, "~> 0.23", [hex: :rustler, repo: "hexpm", optional: true]}], "hexpm", "c5a078315c5f450281f75c0953b14535fbaaad737b85a97a2b72983f45cc30d2"},
+}
