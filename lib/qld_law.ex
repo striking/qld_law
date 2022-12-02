@@ -1,18 +1,15 @@
 defmodule QldLaw do
-  @moduledoc """
-  Documentation for `QldLaw`.
-  """
 
-  @doc """
-  Hello world.
+  def extract_public_notices(file \\ "priv/test.pdf") do
 
-  ## Examples
+    with  {:ok, content} <- PdfToText.from_path(file) do
+      content
+      |> parse_text  #pparse text
+    end
+  end
 
-      iex> QldLaw.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def parse_text(string) do
+    # string
+    # |> String.split() 
   end
 end
