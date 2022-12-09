@@ -11,6 +11,6 @@ defmodule QldLaw do
     # string
     String.split(content, ~r/\n\n;PUBLIC NOTICES\nNotice of intention to apply for Grant\nof Probate or Letters of Administration\n/)
     |> List.last
-    # |> String.split() 
+    |> String.split(~r/\n?\n;?[A-Z]\w+,\s[A-Z]\w+([A-Z]\w)?/ ) 
   end
 end
