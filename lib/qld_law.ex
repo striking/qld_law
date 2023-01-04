@@ -13,30 +13,24 @@ defmodule QldLaw do
 
   def extract_public_notices(file \\ "priv/test.pdf") do
     {:ok, content} = PdfToText.from_path(file)
-      # content
-      # |> parse_text  #pparse text
   end
 
   def parse_text({:ok, content}) do
-    content
-    |> String.split(~r/\n\n;PUBLIC NOTICES\nNotice of intention to apply for Grant\nof Probate or Letters of Administration\n/)
-    |> List.last
-    |> String.split(~r/\n?\n;?[A-Z]\w+,\s[A-Z]\w+([A-Z]\w)?/)
+    listings = 
+      content
+        |> String.split(~r/\n\n;PUBLIC NOTICES\nNotice of intention to apply for Grant\nof Probate or Letters of Administration\n/)
+        |> List.last
+        |> String.split(~r/\n?\n;?[A-Z]\w+,\s[A-Z]\w+([A-Z]\w)?/)
 
-    %Probate{
-      first_name: extract_first_name(content), 
-      last_name: extract_last_name(content), 
-      address: extract_address(content), 
-      suburb: extract_suburb(content), 
-      middle_name: extract_middle_name(content), 
-      law_firm: extract_law_firm(content),
-}
-    # |> Enum.map(&extract_first_name/1)
-    # |> Enum.map(&extract_last_name/1)
-    # |> Enum.map(&extract_middle_name/1)
-    # |> Enum.map(&extract_address/1)
-    # |> Enum.map(&extract_law_firm/1)
-    # |> filter_by_suburb
+    Enum.map(listings, fn item ->
+      %Probate{
+        first_name: extract_first_name(item), 
+        last_name: extract_last_name(item), 
+        address: extract_address(item), 
+        suburb: extract_suburb(item), 
+        middle_name: extract_middle_name(item), 
+        law_firm: extract_law_firm(item),
+        } end)
   end
 
 # Enum.map(suburbs, fn map -> %QldLaw.Probate{suburb: map["suburb"]} end)
@@ -79,7 +73,6 @@ defmodule QldLaw do
       nil -> %{"address" => "Not Found"}
       %{"address" => address} -> %{"address" => address}
     end
-    # Regex.named_captures(~r/of\s(?<address>[0-9]{1,}\/?[0-9]{1,}\s[A-Za-z]\w+\s[A-Za-z]\w+)\,/, content)
   end
 
   def extract_suburb(content) do
@@ -90,9 +83,9 @@ defmodule QldLaw do
   end
 
   def extract_law_firm(content) do
-    case Regex.named_captures(~r/\nLodged by:\s(?<lawyer>(.*?)[\n.])/, content) do
+    case Regex.named_captures(~r/\nLodged by:\s(?<law_firm>(.*?)[\n.])/, content) do
       nil -> %{"law_firm" => "Not Found"}  
-      %{"lawfirm" => lawyer} -> %{"lawfirm" => lawyer}
+      %{"law_firm" => law_firm} -> %{"law_firm" => law_firm}
     end
   end
 end
