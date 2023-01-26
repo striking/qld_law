@@ -2,7 +2,7 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_full_name(String.t) :: String.t
   def extract_full_name(content) do
-    case Regex.named_captures(~r/(?<=[of\s])(?<fullname>[A-Z]+\s[A-Z]+.*\s)(?=late)/, content) do
+    case Regex.named_captures(~r/[of\s](?<fullname>[A-Z]+\s[A-Z]+.*\s)late/, content) do
       nil -> nil
       %{"fullname" => fullname} -> standardise_string(fullname)
     end
@@ -36,9 +36,25 @@ defmodule QldLaw.Impl.ProbateParser do
   @spec extract_address(String.t) :: String.t
   def extract_address(content) do
     # case Regex.named_captures(~r/late of (?<address>(.*?))\,/, content) do
-    case Regex.named_captures(~r/(?=<(formerly\sof|late\sof)?<address>\d+[\w\s-\/]+)(?=,)/, content) do
+    case Regex.named_captures(~r/(formerly\sof|late\sof)(?<address>\d+[\w\s-\/]+),/, content) do
       nil -> retry_address(content) 
       %{"address" => address} -> standardise_string(address)
+    end
+  end
+
+  @spec extract_number(String.t) :: String.t
+  def extract_number(content) do
+    case Regex.named_captures(~r/late.*\s(?<number>\d{1,}(\/\d{1,})?).*[A-Za-z]+,/, content) do
+      nil -> retry_address(content)
+      %{"number" => number} -> standardise_string(number)
+    end
+  end
+
+  @spec extract_street(String.t) :: String.t
+  def extract_street(content) do
+    case Regex.named_captures(~r/late.*\d+\s(?<street_name>[\w\s]+),/, content) do
+      nil -> retry_address(content)
+      %{"street_name" => street_name} -> standardise_string(street_name)
     end
   end
 
@@ -59,7 +75,7 @@ defmodule QldLaw.Impl.ProbateParser do
   end
 
   defp retry_address(content) do
-    case Regex.named_captures(~r/(late\s|formerly\sof\s|the\slate\s)(?<address>.+\s*).(?=(deceased|who|will\sbe))/, content) do
+    case Regex.named_captures(~r/(late\s|formerly\sof\s|the\slate\s)(?<address>.+\s*).(deceased|who|will\sbe)/, content) do
       nil -> nil
       %{"address" => address} -> standardise_string(address)  
     end
@@ -70,8 +86,9 @@ defmodule QldLaw.Impl.ProbateParser do
     |> String.replace("\n", " ", trim: true)
     |> String.replace("of", "", trim: true)
     |> String.replace(",", "", trim: true)
+    |> String.replace("in the State", "", trim: true)
     |> String.replace("deceased", "", trim: true)
     |> String.trim() 
-  
+
   end
 end

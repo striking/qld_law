@@ -1,7 +1,7 @@
 defmodule QldLaw.Impl.OutputGenerator do
   alias QldLaw.Probate 
-
    
+  # update to IO.iodata_to_binary
   @spec format_output_to_string(QldLaw.Probate.t()) :: String.t()
   def format_output_to_string(%Probate{} = probate) do
     "#{probate.full_name}, #{probate.address}, #{probate.law_firm} \n"
