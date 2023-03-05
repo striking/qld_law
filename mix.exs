@@ -25,6 +25,7 @@ defmodule QldLaw.MixProject do
       {:pdf_pal, "~> 0.1.0"},
       {:pdf_to_text, git: "https://github.com/remoteoss/pdf_to_text.git"},
       {:bcc_planning, path: "../bcc_planning"},
+      {:csv, "~> 3.0"}
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end

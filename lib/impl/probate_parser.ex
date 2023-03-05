@@ -19,7 +19,7 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_last_name(String.t) :: String.t
   def extract_last_name(content) do
-    case Regex.named_captures(~r/(of|the\slate)\s[A-Z]+(?<lastname>[A-Z].*)\n?\s?late/, content) do
+    case Regex.named_captures(~r/of\s[\w\s]+\s(?<lastname>[A-Z]+)\s(late|of|\(also)/, content) do
       nil -> nil 
       %{"lastname" => lastname} -> standardise_string(lastname)
     end
@@ -35,9 +35,8 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_address(String.t) :: String.t
   def extract_address(content) do
-    # case Regex.named_captures(~r/late of (?<address>(.*?))\,/, content) do
-    case Regex.named_captures(~r/(formerly\sof|late\sof)(?<address>\d+[\w\s-\/]+),/, content) do
-      nil -> retry_address(content) 
+    case Regex.named_captures(~r/late.*\s(?<address>\d[\-\/\d\w\s\n\,]+)\sdeceased/, content) do
+      nil -> "error: #{content}"
       %{"address" => address} -> standardise_string(address)
     end
   end
@@ -52,9 +51,17 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_street(String.t) :: String.t
   def extract_street(content) do
-    case Regex.named_captures(~r/late.*\d+\s(?<street_name>[\w\s]+),/, content) do
-      nil -> retry_address(content)
+    case Regex.named_captures(~r/late.*\s\d[\s\w\,]*\s(?<street_name>[\w\s]+),[\W\D]*deceased/, content) do
+      nil -> "error #{content}"
       %{"street_name" => street_name} -> standardise_string(street_name)
+    end
+  end
+
+  @spec extract_street_suffix(String.t) :: String.t()
+  def extract_street_suffix(content) do
+    case Regex.named_captures(~r/late.*\d+\s[\w\s]+(?<suffix>Street|Road|Court|Avenue|Lane),/, content) do
+      nil -> ""
+      %{"suffix" => suffix} -> standardise_string(suffix)
     end
   end
 
@@ -68,7 +75,7 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_law_firm(String.t) :: String.t
   def extract_law_firm(content) do
-    case Regex.named_captures(~r/\nLodged by:?\s(?<law_firm>.*[\n\D\W]*.*)\./, content) do
+    case Regex.named_captures(~r/\nLodged by:?\s(?<law_firm>.*\s.*)\./, content) do
       nil -> nil  
       %{"law_firm" => law_firm} -> standardise_string(law_firm)
     end
@@ -84,7 +91,7 @@ defmodule QldLaw.Impl.ProbateParser do
   defp standardise_string(string) do
     string
     |> String.replace("\n", " ", trim: true)
-    |> String.replace("of", "", trim: true)
+    |> String.replace(" of ", "", trim: true)
     |> String.replace(",", "", trim: true)
     |> String.replace("in the State", "", trim: true)
     |> String.replace("deceased", "", trim: true)
