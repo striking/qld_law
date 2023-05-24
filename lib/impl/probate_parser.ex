@@ -19,7 +19,7 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_last_name(String.t) :: String.t
   def extract_last_name(content) do
-    case Regex.named_captures(~r/of\s[\w\s]+\s(?<lastname>[A-Z]+)\s(late|of|\(also)/, content) do
+    case Regex.named_captures(~r/of\s[\w\s]+\s(?<lastname>[A-Z]+)(\s|,|deceased|late|of|\(also)/, content) do
       nil -> nil 
       %{"lastname" => lastname} -> standardise_string(lastname)
     end
@@ -51,7 +51,8 @@ defmodule QldLaw.Impl.ProbateParser do
 
   @spec extract_street(String.t) :: String.t
   def extract_street(content) do
-    case Regex.named_captures(~r/late.*\s\d[\s\w\,]*\s(?<street_name>[\w\s]+),[\W\D]*deceased/, content) do
+    # case Regex.named_captures(~r/late.*\s\d[\s\w\,]*\s(?<street_name>[\w\s]+),[\W\D]*deceased/, content) do
+    case Regex.named_captures(~r/late\sof.*\s\d+[a-z\-\\\/\d]*\s(?<street_name>[\n\w]+),?/, content) do
       nil -> "error #{content}"
       %{"street_name" => street_name} -> standardise_string(street_name)
     end

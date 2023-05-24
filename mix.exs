@@ -22,7 +22,7 @@ defmodule QldLaw.MixProject do
   defp deps do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
-      {:pdf_pal, "~> 0.1.0"},
+      # {:pdf_pal, "~> 0.1.0"},
       {:pdf_to_text, git: "https://github.com/remoteoss/pdf_to_text.git"},
       {:bcc_planning, path: "../bcc_planning"},
       {:csv, "~> 3.0"}
