@@ -1,10 +1,6 @@
 defmodule QldLaw.Impl.OutputGenerator do
   alias QldLaw.Probate
 
-  # add full address column
-  # add column for entire text for logging
-  # remove QPP
-
   @columns ~w(first_name last_name number street_name street_suffix suburb boundary_area zoning development_opportunity splitter? law_firm )a
   @filename "output.csv"
 
@@ -28,6 +24,15 @@ defmodule QldLaw.Impl.OutputGenerator do
     |> CSV.encode()
     |> Enum.into(File.stream!(file_name <> "_" <> @filename, [:write, :utf8, :append]))
   end
+  
+  def write_to_csv({:ok, maps}, file_name) do
+    headers = get_headers(maps)
+    values = get_values(maps)
+    data = values
+      |> Enum.reduce([headers |> Enum.join(",")], fn value, acc -> [acc, value |> Enum.join(",")] end)
+  
+    write_to_csv_file(file_name, data)
+  end
 
   def write_headings(file_name) do
     headings = Enum.join(@columns, ",")
@@ -38,15 +43,6 @@ defmodule QldLaw.Impl.OutputGenerator do
     Enum.map(columns, &Map.get(record, &1))
   end
 
-  def write_to_csv({:ok, maps}, file_name) do
-    headers = get_headers(maps)
-    values = get_values(maps)
-    data = values
-      |> Enum.reduce([headers |> Enum.join(",")], fn value, acc -> [acc, value |> Enum.join(",")] end)
-  
-    write_to_file(file_name, data)
-  end
-  
   defp get_headers(maps) do
     maps |> List.first() |> Map.keys()
   end
@@ -55,9 +51,15 @@ defmodule QldLaw.Impl.OutputGenerator do
     maps |> Enum.map(&Map.values/1)
   end
   
-  defp write_to_file(file_name, data) do
+  defp write_to_csv_file(file_name, data) do
     path = file_name <> ".csv"
-    File.write(path, data)
-  end
 
+    case File.write(path, data) do
+      :ok -> 
+        {:ok, path}
+
+      {:error, reason} ->
+        {:error, "Failed to write to CSV file #{path}: #{inspect(reason)}"}
+    end
+  end
 end

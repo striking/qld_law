@@ -2,7 +2,11 @@ defmodule QldLaw.Impl.PublicNotices do
   
   alias QldLaw.Probate
   alias QldLaw.Impl.OutputGenerator
+  alias QldLaw.Impl.CouncilApis.BccPlanningApi
   import QldLaw.Impl.ProbateParser 
+
+  @public_notices ~r/\n\n;PUBLIC NOTICES\nNotice of intention to apply for Grant\nof Probate or Letters of Administration\n/
+  @paragrph_delimeter ~r/[\s;]([A-Z]+,\s[A-Z]+.*)\nAfter/      
 
   @spec export_public_notices(String.t()) :: {:error, String.t()} | {:ok, list(map())}
   def export_public_notices(file_name) when is_binary(file_name) do
@@ -12,8 +16,8 @@ defmodule QldLaw.Impl.PublicNotices do
     |> convert_to_probates_struct
     |> Probate.filter_by_address
     |> Probate.filter_by_suburb
-    |> update_map_with_api_result
-    |> update_map_with_lot_data_api_result
+    |> get_zoning_data
+    |> get_lot_size_data
     |> Probate.reject_non_developable
     |> check_if_splitter_block
   end
@@ -49,35 +53,21 @@ defmodule QldLaw.Impl.PublicNotices do
 
   def flatten_list(error), do: error
 
-  def update_map_with_api_result({:ok, probate_list}) do
-    result = Enum.map(probate_list, fn map ->
-      case BccPlanning.return_zoning_data_for_address(map) do
-    {:ok, response} -> 
-      Map.merge(map, response)
-    _ ->
-        map
-      end
-    end)
+  def get_zoning_data({:ok, probate_list}) do
+    result = Enum.map(probate_list, &BccPlanningApi.get_zoning_data/1)
 
     {:ok, result}
   end
 
-  def update_map_with_api_result(error), do: error
+  def get_zoning_data(error), do: error
   
-  def update_map_with_lot_data_api_result({:ok, probate_list}) do
-    result = Enum.map(probate_list, fn map ->
-      case BccPlanning.return_lot_data_for_address(map) do
-    {:ok, response} -> 
-      Map.merge(map, response)
-    _ ->
-        map
-      end
-    end)
+  def get_lot_size_data({:ok, probate_list}) do
+    result = Enum.map(probate_list, &BccPlanningApi.get_lot_size_date/1)
 
     {:ok, result}
   end
 
-  def update_map_with_api_result(error), do: error
+  def get_lot_size_data(error), do: error
   
   @spec convert_pdf_to_text(String.t()) :: {atom(), String.t()}
   def convert_pdf_to_text(path) do
@@ -88,9 +78,9 @@ defmodule QldLaw.Impl.PublicNotices do
   @spec parse_text({:ok, String.t()}) :: {:ok, list(QldLaw.Probate.t())}
   def parse_text({:ok, content}) do
     probate_list = content
-    |> String.split(~r/\n\n;PUBLIC NOTICES\nNotice of intention to apply for Grant\nof Probate or Letters of Administration\n/)
+    |> String.split(@public_notices)
     |> List.last
-    |> String.split(~r/[\s;]([A-Z]+,\s[A-Z]+.*)\nAfter/)      
+    |> String.split(@paragrph_delimeter)     
 
     {:ok, probate_list}
   end

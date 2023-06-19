@@ -1,25 +1,25 @@
 defmodule QldLaw.Probate do
   
   @type t :: %__MODULE__{
-    full_name: atom() | String.t(),
-    first_name: atom() | String.t(), 
-    last_name: atom() | String.t(), 
-    number: atom() | String.t(),
-    street_name: atom() | String.t(),
-    street_suffix: atom() | String.t(),
-    address: atom() | String.t(), 
-    suburb: atom() | String.t(), 
-    middle_name: atom() | String.t(), 
-    law_firm: atom() | String.t(),
-    raw_content: atom() | String.t(),
-    zoning: String.t(),
-    lot_area: String.t(),
-    boundary_area: String.t(),
-    parcel_house_number: String.t(),
-    corridor_street_name: String.t(),
-    parcel_suburb: String.t(),
-    development_opportunity: String.t(),
-    splitter?: String.t()
+    full_name:                nil | String.t(),
+    first_name:               nil | String.t(), 
+    last_name:                nil | String.t(), 
+    number:                   nil | String.t(),
+    street_name:              nil | String.t(),
+    street_suffix:            nil | String.t(),
+    address:                  nil | String.t(), 
+    suburb:                   nil | String.t(), 
+    middle_name:              nil | String.t(), 
+    law_firm:                 nil | String.t(),
+    raw_content:              nil | String.t(),
+    zoning:                   String.t(),
+    lot_area:                 String.t(),
+    boundary_area:            String.t(),
+    parcel_house_number:      String.t(),
+    corridor_street_name:     String.t(),
+    parcel_suburb:            String.t(),
+    development_opportunity:  String.t(),
+    splitter?:                String.t()
   }
 
   defstruct [
@@ -56,12 +56,20 @@ defmodule QldLaw.Probate do
     Aged Aveo Bupa BUPA Regis Uniting Wesley Anglicare unit Unit 
     ]
 
-  @spec filter_by_address({:ok, list(map)}) :: {:ok, list(map)}
+  # @spec filter_by_address({:ok, list(map)}) :: {:ok, list(map)}
+  # def filter_by_address({:ok, content}) do
+  #   result = content
+  #   |> Enum.reject(&is_nil(&1.address))
+  #   |> Enum.reject(&String.contains?(&1.address, @address))
+  #   
+  #   {:ok, result}
+  # end
+
   def filter_by_address({:ok, content}) do
-    result = content
-    |> Enum.reject(&is_nil(&1.address))
-    |> Enum.reject(&String.contains?(&1.address, @address))
-    
+    result = filter_if_list(content, fn probate ->
+      probate.address && !String.contains?(probate.address, @address)
+    end)
+
     {:ok, result}
   end
 
@@ -76,6 +84,7 @@ defmodule QldLaw.Probate do
     {:ok, result}
   end
 
+  
   def filter_by_suburb(error), do: error
 
   def reject_non_developable({:ok, content}) do
@@ -86,5 +95,10 @@ defmodule QldLaw.Probate do
   end
 
   def reject_non_developable(error), do: error
+
+  defp filter_if_list({:ok, list}, filter_fn) when is_list(list) do
+    {:ok, Enum.filter(list, filter_fn)}
+  end
+  defp filter_if_list(error, _), do: error
   
 end
